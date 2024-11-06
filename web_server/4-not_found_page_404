@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#This script create a page for 404 message
 
 # Check for root privileges
 if [ "$EUID" -ne 0 ]; then
