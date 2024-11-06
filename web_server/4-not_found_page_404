@@ -18,6 +18,7 @@ echo "Ceci n'est pas une page" | tee /var/www/html/404.html
 sed -i '/^}$/i \
     error_page 404 /404.html; \
     location = /404.html { \
+        root /var/www/html;
         internal; \
     }' /etc/nginx/sites-available/default
 
