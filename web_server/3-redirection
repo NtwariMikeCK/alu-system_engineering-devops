@@ -17,3 +17,10 @@ sed -i "/^}$/i \\
 
 # Reload Nginx to apply changes
 service nginx reload
+
+
+if [ "$(curl -s -o /dev/null -w "%{http_code}" http://localhost/redirect_me)" == "301" ]; then
+  echo "Redirection working as expected."
+else
+  echo "Redirection failed."
+fi
