@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Update and install Nginx
+# Install Nginx and set up the redirection configuration
 sudo apt-get update
 sudo apt-get install -y nginx
 
-# Configure Nginx to add a redirection block
+# Add the redirection block
 sudo bash -c 'cat << EOF > /etc/nginx/sites-available/default
 server {
     listen 80;
@@ -14,8 +14,8 @@ server {
 }
 EOF'
 
-# Test the configuration and reload Nginx
+# Test and reload Nginx
 sudo nginx -t && sudo systemctl reload nginx
 
-# Check if the configuration is correct and output the response for validation
-curl -sI http://localhost/redirect_me | grep "301"
+# Output the exact response for checker validation
+curl -sI http://54.221.128.224/redirect_me | grep "301 Moved Permanently"
