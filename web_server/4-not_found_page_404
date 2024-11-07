@@ -1,26 +1,36 @@
 #!/usr/bin/env bash
-#This script create a page for 404 message
+# Update and install Nginx if not already installed
+sudo apt-get update
+sudo apt-get install -y nginx
 
-# Check for root privileges
-if [ "$EUID" -ne 0 ]; then
-  echo "Please run as root"
-  exit 1
-fi
+# Create a new Nginx configuration to set up the redirect
+sudo bash -c 'cat << EOF > /etc/nginx/sites-available/default
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
 
-# Install Nginx if not already installed
-apt-get update -y
-apt-get install -y nginx
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
 
-# Create a custom 404 page with the required message
-echo "Ceci n'est pas une page" | tee /var/www/html/404.html
+    server_name _;
 
-# Update the Nginx configuration to use the custom 404 page
-sed -i '/^}$/i \
-    error_page 404 /404.html; \
-    location = /404.html { \
-        root /var/www/html;
-        internal; \
-    }' /etc/nginx/sites-available/default
+    # Redirect /redirect_me to the specified URL
+    location = /redirect_me {
+        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+    }
+
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+}
+EOF'
+
+# Test the Nginx configuration for syntax errors
+sudo nginx -t
 
 # Reload Nginx to apply changes
-service nginx reload
+sudo systemctl reload nginx
+
+# Test and display the HTTP status code for /redirect_me
+echo "Testing redirection:"
+curl -o /dev/null -s -w "%{http_code}\n" http://localhost/redirect_me
