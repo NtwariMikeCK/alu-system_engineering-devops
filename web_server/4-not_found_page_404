@@ -1,36 +1,25 @@
 #!/usr/bin/env bash
-# Update and install Nginx if not already installed
-sudo apt-get update
-sudo apt-get install -y nginx
+# Ensure script is run as root
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be run as root" 1>&2
+    exit 1
+fi
 
-# Create a new Nginx configuration to set up the redirect
-sudo bash -c 'cat << EOF > /etc/nginx/sites-available/default
-server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
+# Create custom 404 page
+echo "Ceci n'est pas une page" > /var/www/html/custom_404.html
 
+# Append 404 error configuration to Nginx
+cat << EOF >> /etc/nginx/sites-available/default
+
+# Custom 404 error page configuration
+error_page 404 /custom_404.html;
+location = /custom_404.html {
     root /var/www/html;
-    index index.html index.htm index.nginx-debian.html;
-
-    server_name _;
-
-    # Redirect /redirect_me to the specified URL
-    location = /redirect_me {
-        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
-    }
-
-    location / {
-        try_files \$uri \$uri/ =404;
-    }
+    internal;
 }
-EOF'
+EOF
 
-# Test the Nginx configuration for syntax errors
-sudo nginx -t
-
-# Reload Nginx to apply changes
-sudo systemctl reload nginx
-
-# Test and display the HTTP status code for /redirect_me
-echo "Testing redirection:"
-curl -o /dev/null -s -w "%{http_code}\n" http://localhost/redirect_me
+# Test and reload Nginx
+nginx -t && systemctl reload nginx
+echo "Testing errorpage:"
+curl -o /dev/null -s -w "%{http_code}\n" http://localhost/hello
