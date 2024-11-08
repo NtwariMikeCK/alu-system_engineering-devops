@@ -1,19 +1,42 @@
 #!/usr/bin/env bash
-#This installs proxy to help us work as the load balancer
+# Update and install HAProxy
 
-sudo apt-get -y update
-sudo apt-get install haproxy
-sudo chown $USER:USER /etc/haproxy/haproxy.cfg
+sudo apt update
+sudo apt install -y haproxy
 
-echo "
-forntend myschoolwork
-    bind *:80
+# Backup the original configuration file
+sudo cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.bak
+
+# Write the HAProxy configuration
+sudo bash -c 'cat > /etc/haproxy/haproxy.cfg <<EOF
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    chroot /var/lib/haproxy
+    stats timeout 30s
+    user haproxy
+    group haproxy
+    daemon
+
+defaults
+    log global
     mode http
-    default_backend app
+    option httplog
+    option dontlognull
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
 
-backend app
+frontend http_front
+    bind *:80
+    default_backend http_back
+
+backend http_back
     balance roundrobin
     server 6315-web-01 54.221.128.224:80 check
-    server 6315-web-02 54.91.66.161:80 check" >> /etc/haproxy/haproxy.cfg
+    server 6315-web-02 54.91.66.161:80 check
+EOF'
 
-sudo service haproxy restart
+# Restart and enable HAProxy
+sudo systemctl restart haproxy
+sudo systemctl enable haproxy
