@@ -1,25 +1,19 @@
 #!/usr/bin/env bash
-# Ensure script is run as root
-if [ "$(id -u)" != "0" ]; then
-    echo "This script must be run as root" 1>&2
-    exit 1
-fi
+# Update package lists to ensure latest information
+sudo apt-get update -y
 
-# Create custom 404 page
-echo "Ceci n'est pas une page" > /var/www/html/custom_404.html
+# Install nginx with automatic "yes" confirmation
+sudo apt-get install -y nginx
+sudo ufw allow 'Nginx HTTP'
 
-# Append 404 error configuration to Nginx
-cat << EOF >> /etc/nginx/sites-available/default
+# Configure Nginx to display "Holberton School" on the home page
+echo "Holberton School for the win!" | sudo tee /var/www/html/index.html > /dev/null
 
-# Custom 404 error page configuration
-error_page 404 /custom_404.html;
-location = /custom_404.html {
-    root /var/www/html;
-    internal;
-}
-EOF
+#REDIRECT
+sed -i '/listen 80 default_server/a rewrite ^/redirect_me https://www.youtube.com/watch?v=7ESO6SHEwGk&list=RD7ESO6SHEwGk&start_radio=1 permanent;' /etc/nginx/sites-available/default
 
-# Test and reload Nginx
-nginx -t && systemctl reload nginx
-echo "Testing errorpage:"
-curl -o /dev/null -s -w "%{http_code}\n" http://localhost/hello
+#error page
+sed -i '/listen 80 default_server/a error_page 404 /404.html;' /etc/nginx/sites-available/default
+
+# Restart Nginx without using systemctl (use the service command instead)
+sudo service nginx restart
