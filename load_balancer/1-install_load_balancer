@@ -1,0 +1,19 @@
+!#/usr/bin/env bash
+#This installs proxy to help us work as the load balancer
+
+sudo apt-get -y update
+sudo apt-get install haproxy
+sudo chown $USER:USER /etc/haproxy/haproxy.cfg
+
+echo "
+forntend myschoolwork
+    bind *:80
+    mode http
+    default_backend app
+
+backend app
+    balance roundrobin
+    server 6315-web-01 54.221.128.224:80 check
+    server 6315-web-02 54.91.66.161:80 check" >> /etc/haproxy/haproxy.cfg
+
+sudo service haproxy restart
