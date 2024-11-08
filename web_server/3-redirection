@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
-# Install Nginx and set up the redirection configuration
-sudo apt-get update
-sudo apt-get install -y nginx
+# This script installs Nginx and configures a 301 redirection on Ubuntu
 
-# Append the redirect location block to the Nginx default configuration
-sudo bash -c 'cat << EOF >> /etc/nginx/sites-available/default
+# Update the package list and install Nginx
+sudo apt-get update -y
+sudo apt-get install nginx -y
 
-# Add location block for redirection
-location = /redirect_me {
-    return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
-}
-EOF'
+# Create a backup of the default Nginx configuration file
+sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak
 
-# Test and reload Nginx
-sudo nginx -t && sudo systemctl reload nginx
+# Use `sed` to add a redirect to the configuration
+sudo sed -i '/^\s*server\s*{/,/^\s*}/ s|^\s*location / {|    location /redirect_me {\n        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;\n    }|' /etc/nginx/sites-available/default
+
+# Reload Nginx to apply the changes
+sudo systemctl reload nginx
+
+# Confirm the status of the Nginx service
+sudo systemctl status nginx
