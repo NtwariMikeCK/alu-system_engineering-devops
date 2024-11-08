@@ -1,18 +1,15 @@
 #!/usr/bin/env bash
-# This script installs Nginx and configures a 301 redirection on Ubuntu
-
-# Update the package list and install Nginx
+# Update package lists to ensure latest information
 sudo apt-get update -y
-sudo apt-get install nginx -y
 
-# Create a backup of the default Nginx configuration file
-sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak
+# Install nginx with automatic "yes" confirmation
+sudo apt-get install -y nginx
+sudo ufw allow 'Nginx HTTP'
 
-# Use `sed` to add a redirect to the configuration
-sudo sed -i '/^\s*server\s*{/,/^\s*}/ s|^\s*location / {|    location /redirect_me {\n        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;\n    }|' /etc/nginx/sites-available/default
+# Configure Nginx to display "Holberton School" on the home page
+echo "Holberton School for the win!" | sudo tee /var/www/html/index.html > /dev/null
 
-# Reload Nginx to apply the changes
-sudo systemctl reload nginx
+sed -i '/listen 80 default_server/a rewrite ^/redirect_me https://www.youtube.com/watch?v=7ESO6SHEwGk&list=RD7ESO6SHEwGk&start_radio=1 permanent;' /etc/nginx/sites-available/default
 
-# Confirm the status of the Nginx service
-sudo systemctl status nginx
+# Restart Nginx without using systemctl (use the service command instead)
+sudo service nginx restart
