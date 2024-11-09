@@ -1,32 +1,39 @@
 #!/usr/bin/env bash
-# installs nginx with the following configurations
+# Script to install and configure Nginx with custom headers and settings
 
+# Update the package lists and install Nginx
 sudo apt-get update -y
 sudo apt-get install -y nginx
 
-mkdir /etc/nginx/html
-touch /etc/nginx/html/index.html
-echo "Holberton School" > /etc/nginx/html/index.html
-touch /etc/nginx/html/404.html
-echo "Ceci n'est pas une page" > /etc/nginx/html/404.html
+# Create necessary directories and files
+sudo mkdir -p /etc/nginx/html
+echo "Holberton School" | sudo tee /etc/nginx/html/index.html
+echo "Ceci n'est pas une page" | sudo tee /etc/nginx/html/404.html
 
-printf %s "server {
-    listen 80;
+# Modify the Nginx default server block configuration
+sudo tee /etc/nginx/sites-available/default > /dev/null << EOF
+server {
+    listen 80 default_server;
     listen [::]:80 default_server;
-    add_headers X-Served-By $HOSTNAME;
+    
+    # Custom header to show the hostname
+    add_header X-Served-By \$hostname;
 
-    root  /etc/nginx/html;
+    root /etc/nginx/html;
     index index.html index.htm;
 
+    # Redirect configuration
     location /redirect_me {
         return 301 http://cuberule.com/;
     }
 
+    # Custom 404 page configuration
     error_page 404 /404.html;
-    location /404 {
-      root /etc/nginx/html;
-      internal
+    location = /404.html {
+        internal;
     }
-}" > /etc/nginx/sites-available/default
+}
+EOF
 
+# Restart Nginx to apply the changes
 sudo systemctl restart nginx
