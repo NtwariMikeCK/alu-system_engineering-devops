@@ -1,12 +1,12 @@
-!#/usr/bin/env bash
-#This installs proxy to help us work as the load balancer
+#!/usr/bin/env bash
+# install load balancer
 
 sudo apt-get -y update
-sudo apt-get install haproxy
-sudo chown $USER:USER /etc/haproxy/haproxy.cfg
+sudo apt-get -y install haproxy
+sudo chown $USER:USER /etc/haproxy//haproxy.cfg
 
 echo "
-forntend myschoolwork
+frontend cryptotechcode
     bind *:80
     mode http
     default_backend app
